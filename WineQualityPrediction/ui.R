@@ -13,13 +13,20 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
                   )),
   
   dashboardSidebar(
-    sidebarMenu(
+    sidebarMenu(id = 'menu1',
       menuItem("About", tabName = "about", icon = icon("dashboard")),
-      menuItem("Data Exploration", tabName = "explore", icon = icon("wpexplorer")),
-      menuItem("Modeling", tabName = "model", icon = icon("th")),
+      menuItem("Data Exploration", tabName = "explore", icon = icon("wpexplorer"))
+    ),
+    # extra options once user clicks the data exploration
+    conditionalPanel(condition = "input.menu1== 'explore' ",
+                     checkboxInput(inputId = 'rem', h5('Change Opacity of points based on REM sleep Variable')
+                     )),
+    sidebarMenu(id = 'menu2',
+      menuItem("Modeling", tabName = "model", icon = icon("th"))
+      ),
+    sidebarMenu(id = 'menu3',
       menuItem("Data", tabName = "data", icon = icon("book"))
-    )
-  ),
+    )),
   dashboardBody(tags$style(type="text/css", "
 /*    Move everything below the header */
     .content-wrapper {
@@ -98,19 +105,16 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
                        "2. Modeling:",
                        br(),
                        "3. Data : ",
-                       br(),
+                       br(), style = 'color:black; font-size:20px'
                        )),
-                
-                box(
-                  title = "Controls",
-                  sliderInput("slider", "Number of observations:", 1, 100, 50)
-                )
-              )
+      )
       ),
       
       # Second tab content
       tabItem(tabName = "explore",
               h2("Data Exploration")
+
+              
       ),
       
       # third tab
