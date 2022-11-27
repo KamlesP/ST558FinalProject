@@ -1,7 +1,8 @@
 
 library(shiny)
 library(shinydashboard)
-
+source('explore.r')
+library(dplyr)
 dashboardPage(skin = 'yellow', title = 'R shiny Application',
   dashboardHeader(titleWidth = '100%', 
                   title = span(
@@ -11,7 +12,6 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
                            tags$h2(class = 'primary-subtitle', style = 'margin-top:20px;color:#100a22; font-size:25px', 'R- Shiny Web Application to Predict Quality of Wine'))
                     
                   )),
-  
   dashboardSidebar(
     sidebarMenu(id = 'menu1',
       menuItem("About", tabName = "about", icon = icon("dashboard")),
@@ -19,8 +19,13 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
     ),
     # extra options once user clicks the data exploration
     conditionalPanel(condition = "input.menu1== 'explore' ",
-                     checkboxInput(inputId = 'rem', h5('Change Opacity of points based on REM sleep Variable')
-                     )),
+                     selectInput(inputId = 'features', label = 'Select Predictor Column', 
+                     choices = colnames(df)[-12]),
+                     selectInput(inputId = 'graphType', label = 'Select Type of Distribution',
+                                 choices = c('Histogram', 'Density Plot', 'Box Plot', 'Pie Chart'),
+                                 selected = 'Histogram'),
+                     checkboxInput(inputId = 'missing', label = 'Check for Missing data', value = F)
+                     ),
     sidebarMenu(id = 'menu2',
       menuItem("Modeling", tabName = "model", icon = icon("th"))
       ),
@@ -112,9 +117,21 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
       
       # Second tab content
       tabItem(tabName = "explore",
-              h2("Data Exploration")
-
-              
+              fluidRow(
+                box(width = 12, h4("Distribution plots comes handy when you have multiple data points and you are looking to explore multiple type
+                                   of distribution plots to analyse the dataset")),
+                box(title = "....", width = 6, status = 'success',plotOutput("plot1", height = 300),
+                    conditionalPanel(condition = "input.menu1.graphType == Histogram",
+                                     sliderInput("slider", label = "Bin Width", 1, 10, 5))),
+                box(status = 'warning', width = 4, plotOutput("plot2", height = 300))
+                
+              ),
+              fluidRow(
+                box(h4("afaalfjalkjf"))
+              ),
+              fluidRow(
+                box(h4("afaalfjalkjf"))
+              )
       ),
       
       # third tab
