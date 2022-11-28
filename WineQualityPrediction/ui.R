@@ -22,8 +22,8 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
                      selectInput(inputId = 'features', label = 'Select Predictor Column', 
                      choices = colnames(df)[-12]),
                      selectInput(inputId = 'graphType', label = 'Select Type of Distribution',
-                                 choices = c('Histogram', 'Density Plot', 'Box Plot', 'Pie Chart'),
-                                 selected = 'Histogram'),
+                                 choices = c('Histogram', 'Density Plot', 'Box Plot', 'Count Plot'),
+                                 selected = 'Count Plot'),
                      checkboxInput(inputId = 'missing', label = 'Check for Missing data', value = F)
                      ),
     sidebarMenu(id = 'menu2',
@@ -120,14 +120,15 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
               fluidRow(
                 box(width = 12, h4("Distribution plots comes handy when you have multiple data points and you are looking to explore multiple type
                                    of distribution plots to analyse the dataset")),
-                box(title = "....", width = 6, status = 'success',plotOutput("plot1", height = 300),
+                box(title = "Plots", width = 6, status = 'success',plotOutput("plot1", height = 250),
                     conditionalPanel(condition = "input.menu1.graphType == Histogram",
-                                     sliderInput("slider", label = "Bin Width", 1, 10, 5))),
-                box(status = 'warning', width = 4, plotOutput("plot2", height = 300))
+                                     checkboxInput('fd', label = 'Use Freedman-Diaconis Rule'))),
+                box(title = 'Corr Plots', width = 6, plotOutput("plot3", height = 250),
+                    sliderInput(inputId = 'power', label = "Power transformation", -3,3,1,step = 0.01 ))
                 
               ),
               fluidRow(
-                box(h4("afaalfjalkjf"))
+                box(status = 'warning', width = 4, plotOutput("plot2", height = 200))
               ),
               fluidRow(
                 box(h4("afaalfjalkjf"))
