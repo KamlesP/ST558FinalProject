@@ -24,7 +24,7 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
                      selectInput(inputId = 'graphType', label = 'Select Type of Distribution',
                                  choices = c('Histogram', 'Density Plot', 'Box Plot', 'Count Plot'),
                                  selected = 'Count Plot'),
-                     checkboxInput(inputId = 'missing', label = 'Check for Missing data', value = F)
+                     checkboxInput(inputId = 'missing', label = 'Check for Missing data', value = T)
                      ),
     sidebarMenu(id = 'menu2',
       menuItem("Modeling", tabName = "model", icon = icon("th"))
@@ -124,11 +124,13 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
                     conditionalPanel(condition = "input.menu1.graphType == Histogram",
                                      checkboxInput('fd', label = 'Use Freedman-Diaconis Rule'))),
                 box(title = 'Corr Plots', width = 6, plotOutput("plot3", height = 250),
-                    sliderInput(inputId = 'power', label = "Power transformation", -3,3,1,step = 0.01 ))
+                    sliderInput(inputId = 'power', width = '70%', 
+                                label = "Power transformation", -3,3,1,step = 0.01 )
+                    )
                 
               ),
               fluidRow(
-                box(status = 'warning', width = 4, plotOutput("plot2", height = 200))
+                box(status = 'warning', width = 4, plotOutput("plot2", height = 300))
               ),
               fluidRow(
                 box(h4("afaalfjalkjf"))

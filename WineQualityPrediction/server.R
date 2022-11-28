@@ -6,7 +6,7 @@ library(DataExplorer)
 source('explore.r')
 library(plotly)
 library(dplyr)
-
+library(viridis)
 
 function(input, output, session) {
 
@@ -69,11 +69,9 @@ function(input, output, session) {
               )
     }
     else if(input$graphType == "Count Plot"){
-      print('yes')
       g <- ggplot(df, aes(quality)) + 
-        geom_bar(stat = 'identity')
-      
-      
+        geom_bar(stat = 'count', fill = viridis(6))
+      plot(g)
     }
 
   })
@@ -90,10 +88,25 @@ function(input, output, session) {
     finalDf <- as.data.frame(newData)
   })
   
+  getCorr <- reactive({
+    data <- getDf()
+    corr <- round(cor(data$power, data$quality),2)
+  })
+  
   output$plot3 <- renderPlot({
     data <- getDf()
+    corr <- getCorr()
+    print(corr)
     g <- ggplot(data, aes(x = power, y = quality))
     g + geom_point(size = 2) +
-      geom_smooth(method = 'lm')
+      geom_smooth(method = 'lm', color = 'red') + 
+      geom_text(x = max(data$power) - 0.5, y = 8 ,
+                label = paste0(corr), color = 'red', size = 8)
   })
+  
+  output$text <- renderText({
+    corr <- getCorr()
+    paste0("Correlation Coefficient : ", corr )
+  })
+  
 }
