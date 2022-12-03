@@ -3,6 +3,7 @@ library(shiny)
 library(shinydashboard)
 source('explore.r')
 library(dplyr)
+library(shinyalert)
 dashboardPage(skin = 'yellow', title = 'R shiny Application',
   dashboardHeader(titleWidth = '100%', 
                   title = span(
@@ -19,12 +20,15 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
     ),
     # extra options once user clicks the data exploration
     conditionalPanel(condition = "input.menu1== 'explore' ",
+                     radioButtons(inputId = 'dfType', label = 'Select Type of Wine Data', 
+                                  choices = c('Red', 'White','Combined')),
                      selectInput(inputId = 'features', label = 'Select Predictor Column', 
                      choices = colnames(df)[1:12]),
                      selectInput(inputId = 'graphType', label = 'Select Type of Distribution',
                                  choices = c('Histogram', 'Density Plot', 'Box Plot', 'Count Plot'),
-                                 selected = 'Count Plot'),
-                     checkboxInput(inputId = 'missing', label = 'Check for Missing data', value = T)
+                                 selected = 'Histogram'),
+                    # set a shiny alter
+                     actionButton(inputId = 'missing', label = 'Check for Missing data')
                      ),
     sidebarMenu(id = 'menu2',
       menuItem("Modeling", tabName = "model", icon = icon("th"))
@@ -118,29 +122,44 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
       # Second tab content
       tabItem(tabName = "explore",
               fluidRow(
-                box(width = 12, h4("Distribution plots comes handy when you have multiple data points and you are looking to explore multiple type
-                                   of distribution plots to analyse the dataset")),
+                box(width = 12, h4("The primary objective of Null Hypothesis testing is to estimate p-value,
+                                    i.e probability of obtaining the observed results, or something more extreme
+                                    if the null hypothesis is true. If the results are unlikely under the null hypothesis, then 
+                                    you will reject the Null Hypothesis", style = "text-align:center",
+                                   br(),
+                                   "H0: Predictor variable has zero slope coefficient",
+                                   br(),
+                                   "Ha: Slope coeffiecient is non zero")),
+
+                box(title = 'Corr Plots', width = 6, plotOutput("plot3", height = 250)
+                    # sliderInput(inputId = 'power', width = '70%', 
+                    #             label = "Power transformation", -3,3,1,step = 0.01 )
+                    ),
+                box(width = 6, uiOutput('text1'), tableOutput('table1'))
+              ),
+              fluidRow(
                 box(title = "Plots", width = 6, status = 'success',plotOutput("plot1", height = 250),
                     conditionalPanel(condition = "input.menu1.graphType == Histogram",
                                      checkboxInput('fd', label = 'Use Freedman-Diaconis Rule'))),
-                box(title = 'Corr Plots', width = 6, plotOutput("plot3", height = 250),
-                    sliderInput(inputId = 'power', width = '70%', 
-                                label = "Power transformation", -3,3,1,step = 0.01 )
-                    )
-                
-              ),
-              fluidRow(
-                box(title = 'Plot for Missing', status = 'warning', width = 4, plotOutput("plot2", height = 300)),
-                box( title = 'Correlation Plot', status = 'warning', width = 7,
+                #box(title = 'Plot for Missing', status = 'warning', width = 4, plotOutput("plot2", height = 300)),
+                box( title = 'Correlation Plot', status = 'warning', width = 6,
                      plotOutput("plot4", height = 300)),
-                box( title = 'Test for Normality', status = 'warning', width = 3),
-                box( title = 'Test for Normality', status = 'warning', width = 2)
+                #box( title = 'Test for Normality', status = 'warning', width = 3),
+                #box( title = 'Test for Normality', status = 'warning', width = 2)
               ),
       ),
       
       # third tab
       tabItem(tabName = 'model',
-              h2('Data modeling ')
+              h2('Data modeling ',
+                 fluidRow(
+                   tabBox(
+                     title = "", id = 'tabset', width = '100%', 
+                     tabPanel(title = 'Modeling Info'),
+                     tabPanel(title = 'Model Fit'),
+                     tabPanel(title  = 'Prediction')
+                   )
+                 ))
       ),
       
       # fourth tab content

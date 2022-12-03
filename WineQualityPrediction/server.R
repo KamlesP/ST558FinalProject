@@ -17,7 +17,24 @@ function(input, output, session) {
     binWidth = 2*IQR(dplyr::select(df, Ft))/(length(dplyr::select(df, Ft))^(1/3))
   })
   
+  # shinyAlter####################
+  observeEvent(input$missing, {
+    showModal(modalDialog(
+      title = "Info!!",
+      uiOutput('text2'),
+      easyClose = TRUE,
+      footer = NULL
+    ))
+  })  
   output$plot1 <- renderPlot({
+    # filter data based on wine radio button
+    if (input$dfType == 'Red'){
+      df <- df %>% dplyr::filter(Type == 'red')
+    } else if(input$dfType == 'White') {
+      df <- df %>% dplyr::filter(Type == 'white')
+    } else {
+      df <- df
+    }
     if (input$graphType == "Density Plot"){
       ggplot(df, aes_string(x = input$features))  + 
         geom_density(aes(fill = factor(quality)), alpha = 0.6) +
@@ -84,31 +101,79 @@ function(input, output, session) {
     }
 
   })
-  output$plot2 <- renderPlot({
-    if (input$missing){
-      plot_missing(df)
-    }
-  })
-  
+
+
   # Data frame to get the main df for further calculations
   getDf <- reactive({
+    # filter data based on wine radio button
+    if (input$dfType == 'Red'){
+      df <- df %>% dplyr::filter(Type == 'red')
+    } else if(input$dfType == 'White') {
+      df <- df %>% dplyr::filter(Type == 'white')
+    } else {
+      df <- df
+    }
     newData <- df %>%dplyr::select(input$features, high.Quality)
     # add a generic name for the predictor column
     newData$featureCol <- newData[,1]
     finalDf <- as.data.frame(newData %>% select(high.Quality, featureCol))
   })
-  
-  getCorr <- reactive({
-    data <- getDf()
-    corr <- round(cor(data$power, data$quality),2)
+  # Del
+  # getCorr <- reactive({
+  #   data <- getDf()
+  #   corr <- round(cor(data$power, data$quality),2)
+  # })
+  # 
+  getPval <- reactive({
+    # calcualte p-value for the plot
+    getData = getDf()
+    mod <- glm(high.Quality ~ featureCol, data = getData)
+    modSum <- summary(mod)
+    pVal <- format(modSum$coefficients, format = "e", digits = 1)
   })
   
   output$plot3 <- renderPlot({
     data <- getDf()
     g <- ggplot(data, aes(x = featureCol, y = high.Quality))
-    g + geom_jitter( size = 2, color = 'blue', alpha = 0.5) + 
-       geom_smooth(method = 'glm', 
-                     color = 'red', method.args = list(family = 'binomial'), se = TRUE)
+    g + geom_jitter( size = 2, color = 'blue', alpha = 0.3) + 
+      stat_smooth(method = 'glm', 
+                     color = 'red', method.args = list(family = binomial),lty = 2, se = TRUE) + 
+      labs(x = paste0(input$features),
+           y = paste0("Probability to High Quality (Quality>5)"))
+  })
+  
+  output$table1 <- renderTable({
+    table <- getPval()
+  })
+  
+  output$text1 <- renderUI({
+    table <- getPval()
+    print(table)
+    pred <- input$features
+    if (as.numeric(table[2,4]) < 0.05){
+      text <- paste0("To establish the inference from the predictor variable it is important to check 
+                     p-value. First row in table belongs to the intercept and second row belongs to the 
+                     predictor's coefficient after fitting a 'glm' model. For a significance level of 0.05,
+                     we can estimate that ", pred ," is significant")
+    } else {
+      text <- paste0("To establish the inference from the predictor variable it is important to check 
+                     p-value. First row in table belongs to the intercept and second row belongs to the 
+                     predictor's coefficient after fitting a 'glm' model. For a significance level of 0.05,
+                     we can estimate that ", pred ," is not significant")
+    }
+    h4(text)
+  })
+  
+  output$text2 <- renderUI({
+    data <- getDf()
+    missVal <- sum(is.na(data))
+    if (missVal == 0){
+      text <- paste0("There is no missing value in the data frame")
+    } else {
+      text <- paste0("Total missing observations in the data frame ", missVal)
+    }
+    
+    h4(text, style = 'color:red' )
   })
   
   output$plot4 <- renderPlot({
