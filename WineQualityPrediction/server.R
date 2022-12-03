@@ -7,15 +7,22 @@ source('explore.r')
 library(plotly)
 library(dplyr)
 library(viridis)
+library(PerformanceAnalytics)
+
 
 function(input, output, session) {
-
+  
+  calBin <- reactive({
+    Ft <- input$features
+    binWidth = 2*IQR(dplyr::select(df, Ft))/(length(dplyr::select(df, Ft))^(1/3))
+  })
+  
   output$plot1 <- renderPlot({
     if (input$graphType == "Density Plot"){
       ggplot(df, aes_string(x = input$features))  + 
         geom_density(aes(fill = factor(quality)), alpha = 0.6) +
         labs(title = "Density Plot",
-             subtitle = paste0(input$features, " grouped by Quality Rating "),
+             subtitle = paste0(str_to_sentence(input$features), " grouped by Quality Rating "),
              cation = "Source: Wine Quality Data",
              x = paste0(input$features),
              fill = "Quality Rating")+
@@ -27,10 +34,10 @@ function(input, output, session) {
       if (input$fd == FALSE){
       ggplot(df, aes_string(x = input$features))  + scale_fill_brewer(palette = "Spectral") +
         geom_histogram(aes(fill = factor(quality)),
-                       #binwidth = input$slider,
+                       #binwidth = 0.1,
                        col = 'black') +
         labs(title = "Density Plot",
-             subtitle = paste0(input$features, " grouped by Quality Rating "),
+             subtitle = paste0(str_to_sentence(input$features), " grouped by Quality Rating "),
              cation = "Source: Wine Quality Data",
              x = paste0(input$features),
              fill = "Quality Rating")+
@@ -39,15 +46,14 @@ function(input, output, session) {
         )
       }
       else if (input$fd){
-        #var = noquote(paste("df",noquote(input$features), sep = "$"))
-        binWidth = 2*IQR(dplyr::select(df, input$features))/(length(dplyr::select(df, input$features))^(1/3))
-        observe(IQR(dplyr::select(df, input$features)))
+        binWidth = calBin()
+        print(unlist(binWidth))
         ggplot(df, aes_string(x = input$features))  + scale_fill_brewer(palette = "Spectral") +
         geom_histogram(aes(fill = factor(quality)),
-                         #binwidth = binWidth,
+                         binwidth = binWidth,
                          col = 'black') +
           labs(title = "Density Plot",
-               subtitle = paste0(input$features, " grouped by Quality Rating "),
+               subtitle = paste0(str_to_sentence(input$features), " grouped by Quality Rating "),
                cation = "Source: Wine Quality Data", color = 'red',
                x = paste0(input$features),
                fill = "Quality Rating")+
@@ -60,7 +66,7 @@ function(input, output, session) {
       g <- ggplot(df, aes(x = factor(quality)))
       g + geom_boxplot( aes_string(y = input$features), varwidth=T, fill="plum") + 
         labs(title="Box plot", 
-             subtitle=paste0(input$features, " grouped by Quality Rating "),
+             subtitle=paste0(str_to_sentence(input$features), " grouped by Quality Rating "),
              caption="Source: Wine Quality Data",
              x= "Wine Quality",
              y= paste0(input$features)) +
@@ -69,8 +75,11 @@ function(input, output, session) {
               )
     }
     else if(input$graphType == "Count Plot"){
-      g <- ggplot(df, aes(quality)) + 
-        geom_bar(stat = 'count', fill = viridis(6))
+      # removing type available from the dataset
+      df <- dplyr::select(df,)
+      g <- ggplot(df, aes(x = quality)) + 
+        geom_bar(stat = 'count', fill = viridis(6)) + 
+        labs(x = 'Quality')
       plot(g)
     }
 
@@ -81,11 +90,12 @@ function(input, output, session) {
     }
   })
   
+  # Data frame to get the main df for further calculations
   getDf <- reactive({
-    t <- input$power
-    newData <- df %>%dplyr::select(input$features, quality)
-    newData$power <- newData[, input$features]^(1/t)
-    finalDf <- as.data.frame(newData)
+    newData <- df %>%dplyr::select(input$features, high.Quality)
+    # add a generic name for the predictor column
+    newData$featureCol <- newData[,1]
+    finalDf <- as.data.frame(newData %>% select(high.Quality, featureCol))
   })
   
   getCorr <- reactive({
@@ -95,18 +105,20 @@ function(input, output, session) {
   
   output$plot3 <- renderPlot({
     data <- getDf()
-    corr <- getCorr()
-    print(corr)
-    g <- ggplot(data, aes(x = power, y = quality))
-    g + geom_point(size = 2) +
-      geom_smooth(method = 'lm', color = 'red') + 
-      geom_text(x = max(data$power) - 0.5, y = 8 ,
-                label = paste0(corr), color = 'red', size = 8)
+    g <- ggplot(data, aes(x = featureCol, y = high.Quality))
+    g + geom_jitter( size = 2, color = 'blue', alpha = 0.5) + 
+       geom_smooth(method = 'glm', 
+                     color = 'red', method.args = list(family = 'binomial'), se = TRUE)
   })
   
-  output$text <- renderText({
-    corr <- getCorr()
-    paste0("Correlation Coefficient : ", corr )
+  output$plot4 <- renderPlot({
+    # generate correlation plot
+    chart.Correlation(df%>%dplyr::select(everything(), -Type, - high.Quality),
+                      method = 'pearson',
+                      histogram = TRUE,
+                      pc = 16)
+    
   })
+
   
 }

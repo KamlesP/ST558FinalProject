@@ -9,7 +9,7 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
                     tags$img(src = "main.jpg", width = '100%'),
                     column(12, class = 'title-box',
                            tags$h1(class = 'primary-title', style = 'margin-top:10px; color:black; font-size:40px', 'VINHO VERDE'),
-                           tags$h2(class = 'primary-subtitle', style = 'margin-top:20px;color:#100a22; font-size:25px', 'R- Shiny Web Application to Predict Quality of Wine'))
+                           tags$h2(class = 'primary-subtitle', style = 'margin-top:20px;color:white; font-size:25px', 'R- Shiny Web Application to Predict Quality of Wine'))
                     
                   )),
   dashboardSidebar(
@@ -20,7 +20,7 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
     # extra options once user clicks the data exploration
     conditionalPanel(condition = "input.menu1== 'explore' ",
                      selectInput(inputId = 'features', label = 'Select Predictor Column', 
-                     choices = colnames(df)[-12]),
+                     choices = colnames(df)[1:12]),
                      selectInput(inputId = 'graphType', label = 'Select Type of Distribution',
                                  choices = c('Histogram', 'Density Plot', 'Box Plot', 'Count Plot'),
                                  selected = 'Count Plot'),
@@ -130,11 +130,12 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
                 
               ),
               fluidRow(
-                box(status = 'warning', width = 4, plotOutput("plot2", height = 300))
+                box(title = 'Plot for Missing', status = 'warning', width = 4, plotOutput("plot2", height = 300)),
+                box( title = 'Correlation Plot', status = 'warning', width = 7,
+                     plotOutput("plot4", height = 300)),
+                box( title = 'Test for Normality', status = 'warning', width = 3),
+                box( title = 'Test for Normality', status = 'warning', width = 2)
               ),
-              fluidRow(
-                box(h4("afaalfjalkjf"))
-              )
       ),
       
       # third tab
