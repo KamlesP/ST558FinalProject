@@ -8,6 +8,7 @@ library(plotly)
 library(dplyr)
 library(viridis)
 library(PerformanceAnalytics)
+library(mathjaxr)
 
 
 function(input, output, session) {
@@ -184,6 +185,42 @@ function(input, output, session) {
                       pc = 16)
     
   })
+  output$LR <- renderUI({
+    content <- "Logistic regression models are extension of linear regression model
+    that maps classification probelem with two possible outcomes. A linear regression model
+    does not output probabilities so it cant be used for a classification problem i.e dog vs cat type 
+    classification problem" 
+    content1 <- "A potential solution for such problems is logistic regression where insted of 
+    fitting a straight line or a hyperplane, we uses a fuction to squeeze the output of a 
+    lienear equation between 0 and 1 "
+    h4(content, br(), content1)
+  })
+  
+  # mathematical equations
+  output$eq1 <- renderUI({
+    withMathJax('$$logistic(z) = \\frac{1}{1 + e^{-z}}$$')
+  })
+  
+  # Model Fit
+  # split the data set
+  splitDf <- reactive({
+    
+  })
+  
+  # main models
+  output$model <- renderUI({
+    if (input$model == 'GLM'){
+      
+    }else if(input$model == 'Logistic Regression'){
+      
+    }else if(input$model == 'Tree Based'){
+      
+    }else {
+      
+    }
+  })
+  
+  # Model Prediction
 
   
 }

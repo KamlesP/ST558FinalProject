@@ -4,6 +4,8 @@ library(shinydashboard)
 source('explore.r')
 library(dplyr)
 library(shinyalert)
+library(mathjaxr)
+
 dashboardPage(skin = 'yellow', title = 'R shiny Application',
   dashboardHeader(titleWidth = '100%', 
                   title = span(
@@ -142,7 +144,7 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
                     conditionalPanel(condition = "input.menu1.graphType == Histogram",
                                      checkboxInput('fd', label = 'Use Freedman-Diaconis Rule'))),
                 #box(title = 'Plot for Missing', status = 'warning', width = 4, plotOutput("plot2", height = 300)),
-                box( title = 'Correlation Plot', status = 'warning', width = 6,
+                box( title = 'Correlation Plot', status = 'success', width = 6,
                      plotOutput("plot4", height = 300)),
                 #box( title = 'Test for Normality', status = 'warning', width = 3),
                 #box( title = 'Test for Normality', status = 'warning', width = 2)
@@ -155,8 +157,21 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
                  fluidRow(
                    tabBox(
                      title = "", id = 'tabset', width = '100%', 
-                     tabPanel(title = 'Modeling Info'),
-                     tabPanel(title = 'Model Fit'),
+                     tabPanel(title = 'Modeling Info',
+                              fluidRow(
+                                box(title = 'GLM', width = 12, status = 'success'),
+                                box(title = 'Logistic Regression', width = 12, status = 'success', uiOutput('LR'), uiOutput('eq1')),
+                                box(title = 'Tree Based Model', width = 12, status = 'success')
+                              )
+                              ),
+                     tabPanel(title = 'Model Fit',
+                              fluidRow(
+                                box(width = 6, selectInput(inputId = 'model', label = h4("Select Model"),
+                                            choices = c('GLM', "Logistic regression", "Tree Based", "I'm thinking"),
+                                            selected = "I'm thinking")),
+                                box(width = 6, sliderInput(inputId = 'splitratio', label = h4("Select train - test split ratio "),
+                                            min = 0, max = 1, value = 0.5, step = 0.05))
+                              )),
                      tabPanel(title  = 'Prediction')
                    )
                  ))
