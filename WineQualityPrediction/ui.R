@@ -35,6 +35,10 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
     sidebarMenu(id = 'menu2',
       menuItem("Modeling", tabName = "model", icon = icon("th"))
       ),
+    # condtion open in modeling tab
+    conditionalPanel(condition = 'input.menu2 == "model"',
+                     radioButtons(inputId = 'dfType2', label = 'Select Type of Wine Data', 
+                                  choices = c('Red', 'White','Combined'))),
     sidebarMenu(id = 'menu3',
       menuItem("Data", tabName = "data", icon = icon("book"))
     )),
@@ -166,12 +170,25 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
                               ),
                      tabPanel(title = 'Model Fit',
                               fluidRow(
-                                box(width = 6, selectInput(inputId = 'model', label = h4("Select Model"),
+                                box(width = 3, selectInput(inputId = 'model', label = h3("Select Model"),
                                             choices = c('GLM', "Logistic regression", "Tree Based", "I'm thinking"),
                                             selected = "I'm thinking")),
-                                box(width = 6, sliderInput(inputId = 'splitratio', label = h4("Select train - test split ratio "),
-                                            min = 0, max = 1, value = 0.5, step = 0.05))
-                              )),
+                                box(width = 6, sliderInput(inputId = 'splitratio', label = h3("Select train - test split ratio "),
+                                            min = 0, max = 1, value = 0.5, step = 0.05)),
+                                box(width = 3, numericInput(inputId = 'cv', label = h3("Select CV value"), value = 1,
+                                                            min = 1, max = 10))
+                              ),
+                              fluidRow(
+                                box(width = 4,
+                                    checkboxGroupInput(inputId = 'variables',
+                                                       label = h4("Select variable you want 
+                                                                  to include in the model"),
+                                                       choices = colnames(df),
+                                                       selected = "high.Quality"),
+                                    ),
+                                box(width = 6, uiOutput('model'))
+                              )
+                              ),
                      tabPanel(title  = 'Prediction')
                    )
                  ))

@@ -94,10 +94,12 @@ function(input, output, session) {
     }
     else if(input$graphType == "Count Plot"){
       # removing type available from the dataset
-      df <- dplyr::select(df,)
+      #df <- dplyr::select(df,-Type)
       g <- ggplot(df, aes(x = quality)) + 
-        geom_bar(stat = 'count', fill = viridis(6)) + 
-        labs(x = 'Quality')
+        geom_bar(stat = 'count', aes(fill = factor(quality))) + 
+        labs(x = 'Quality',
+             y = 'Count',
+             fill = 'Quality')
       plot(g)
     }
 
@@ -204,14 +206,29 @@ function(input, output, session) {
   # Model Fit
   # split the data set
   splitDf <- reactive({
-    
+    set.seed(42)
+    if (input$dfType2 == 'Red'){
+      df <- df %>% dplyr::filter(Type == 'red')
+    } else if(input$dfType2 == 'White') {
+      df <- df %>% dplyr::filter(Type2 == 'white')
+    } else {
+      df <- df
+    }
+    cols <- c(input$variables)
+     df <- df%>%select(all_of(cols))
+     print(df)
+     index <- sample(dim(df)[1], size = dim(df)[1]*input$splitratio, replace = FALSE)
+     train <- df[index, ]
+     test <-  df[-index,]
   })
   
   # main models
   output$model <- renderUI({
+    df <-splitDf()
     if (input$model == 'GLM'){
       
     }else if(input$model == 'Logistic Regression'){
+      model <- lm
       
     }else if(input$model == 'Tree Based'){
       
