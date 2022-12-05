@@ -170,12 +170,12 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
                               ),
                      tabPanel(title = 'Model Fit',
                               fluidRow(
-                                box(width = 3, selectInput(inputId = 'model', label = h3("Select Model"),
-                                            choices = c('GLM', "Logistic regression", "Tree Based", "I'm thinking"),
+                                box(width = 6, selectInput(inputId = 'model', label = h5("Select Model"),
+                                            choices = c('GLM', "Logistic Regression", "Tree Based", "I'm thinking"),
                                             selected = "I'm thinking")),
-                                box(width = 6, sliderInput(inputId = 'splitratio', label = h3("Select train - test split ratio "),
+                                box(width = 4, sliderInput(inputId = 'splitratio', label = h5("Select train - test split ratio "),
                                             min = 0, max = 1, value = 0.5, step = 0.05)),
-                                box(width = 3, numericInput(inputId = 'cv', label = h3("Select CV value"), value = 1,
+                                box(width = 2, numericInput(inputId = 'cv', label = h5("Select CV value"), value = 1,
                                                             min = 1, max = 10))
                               ),
                               fluidRow(
@@ -183,10 +183,10 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
                                     checkboxGroupInput(inputId = 'variables',
                                                        label = h4("Select variable you want 
                                                                   to include in the model"),
-                                                       choices = colnames(df),
+                                                       choices = colnames(df[, c(1:11,14)]),
                                                        selected = "high.Quality"),
                                     ),
-                                box(width = 6, uiOutput('model'))
+                                box(width = 8, verbatimTextOutput('summary'))
                               )
                               ),
                      tabPanel(title  = 'Prediction')

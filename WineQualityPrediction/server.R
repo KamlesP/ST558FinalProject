@@ -207,35 +207,50 @@ function(input, output, session) {
   # split the data set
   splitDf <- reactive({
     set.seed(42)
+    # nee to add this becoz each df has different obs, else it will count the 
+    # combined df as main one
     if (input$dfType2 == 'Red'){
       df <- df %>% dplyr::filter(Type == 'red')
     } else if(input$dfType2 == 'White') {
-      df <- df %>% dplyr::filter(Type2 == 'white')
+      df <- df %>% dplyr::filter(Type == 'white')
     } else {
       df <- df
     }
-    cols <- c(input$variables)
-     df <- df%>%select(all_of(cols))
-     print(df)
-     index <- sample(dim(df)[1], size = dim(df)[1]*input$splitratio, replace = FALSE)
-     train <- df[index, ]
-     test <-  df[-index,]
+    index <- sample(dim(df)[1], size = dim(df)[1]*input$splitratio, replace = FALSE)
   })
   
   # main models
-  output$model <- renderUI({
-    df <-splitDf()
+  model <- reactive({
+    # get the currect data frame
+    if (input$dfType2 == 'Red'){
+      df <- df %>% dplyr::filter(Type == 'red')
+    } else if(input$dfType2 == 'White') {
+      df <- df %>% dplyr::filter(Type == 'white')
+    } else {
+      df <- df
+    }
+    index <- splitDf()
+    cols <- c(input$variables)
+    df <- df%>%select(all_of(cols))
+    # get the train df
+    trainDf <- df[index,]
+    # this will return a model, need to use renderPrint 
+    # to use this output
     if (input$model == 'GLM'){
-      
     }else if(input$model == 'Logistic Regression'){
-      model <- lm
-      
+      model <- lm(high.Quality ~., data = trainDf)
     }else if(input$model == 'Tree Based'){
       
     }else {
       
     }
   })
+  
+  # to show in app the model summary
+  output$summary <- renderPrint(
+    summary(model()),
+    width = getOption("width")  # need to see how to correct this
+  )
   
   # Model Prediction
 
