@@ -150,14 +150,11 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
                 #box(title = 'Plot for Missing', status = 'warning', width = 4, plotOutput("plot2", height = 300)),
                 box( title = 'Correlation Plot', status = 'success', width = 6,
                      plotOutput("plot4", height = 300)),
-                #box( title = 'Test for Normality', status = 'warning', width = 3),
-                #box( title = 'Test for Normality', status = 'warning', width = 2)
               ),
       ),
       
       # third tab
       tabItem(tabName = 'model',
-              h2('Data modeling ',
                  fluidRow(
                    tabBox(
                      title = "", id = 'tabset', width = '100%', 
@@ -170,28 +167,34 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
                               ),
                      tabPanel(title = 'Model Fit',
                               fluidRow(
-                                box(width = 6, selectInput(inputId = 'model', label = h5("Select Model"),
-                                            choices = c('GLM', "Logistic Regression", "Tree Based", "I'm thinking"),
-                                            selected = "I'm thinking")),
-                                box(width = 4, sliderInput(inputId = 'splitratio', label = h5("Select train - test split ratio "),
+                                box(width = 4, selectInput(inputId = 'model', label = h5("Select Model", style = "color:coral"),
+                                            choices = c('Generalized Model', "Classification Tree", "Random Forest")
+                                            )),
+                                box(width = 4, sliderInput(inputId = 'splitratio', label = h5("Select train - test split ratio ", style = "color:coral"),
                                             min = 0, max = 1, value = 0.5, step = 0.05)),
-                                box(width = 2, numericInput(inputId = 'cv', label = h5("Select CV value"), value = 1,
-                                                            min = 1, max = 10))
+                                box(width = 2, numericInput(inputId = 'cv', label = h5("Select CV value", style = "color:coral"), value = 2,
+                                                            min = 2, max = 10)),
+                                box(width = 2, checkboxInput(inputId = 'fit', label = h5('Fit Model', 
+                                                                          style = "color:coral"),value = FALSE,
+                                                              width = '400px'
+                                                                ))
                               ),
                               fluidRow(
-                                box(width = 4,
-                                    checkboxGroupInput(inputId = 'variables',
-                                                       label = h4("Select variable you want 
-                                                                  to include in the model"),
+                                box(width = 2,
+                                    checkboxGroupInput(inputId = 'variables', inline = FALSE,
+                                                       label = p("Select variable 
+                                                                  to include in the model", style = "color:coral"),
                                                        choices = colnames(df[, c(1:11,14)]),
                                                        selected = "high.Quality"),
                                     ),
-                                box(width = 8, verbatimTextOutput('summary'))
+                                box(width = 6, verbatimTextOutput('summary')),
+                                box(title = p("Model Evaluation & Diagnostics", style = "color:coral"),
+                                    width = 4)
                               )
                               ),
                      tabPanel(title  = 'Prediction')
                    )
-                 ))
+                 )
       ),
       
       # fourth tab content

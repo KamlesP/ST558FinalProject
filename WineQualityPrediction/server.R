@@ -9,7 +9,7 @@ library(dplyr)
 library(viridis)
 library(PerformanceAnalytics)
 library(mathjaxr)
-
+library(caret)
 
 function(input, output, session) {
   
@@ -221,6 +221,7 @@ function(input, output, session) {
   
   # main models
   model <- reactive({
+    set.seed(42)
     # get the currect data frame
     if (input$dfType2 == 'Red'){
       df <- df %>% dplyr::filter(Type == 'red')
@@ -234,22 +235,47 @@ function(input, output, session) {
     df <- df%>%select(all_of(cols))
     # get the train df
     trainDf <- df[index,]
+    x <- trainDf %>% select(everything(), -high.Quality)
+    y <- as.factor(trainDf$high.Quality)
     # this will return a model, need to use renderPrint 
     # to use this output
-    if (input$model == 'GLM'){
-    }else if(input$model == 'Logistic Regression'){
+    if (input$model == 'Generalized Model' && input$fit == TRUE){
+      # control parameter
+      objContrl <- trainControl(method = "cv",
+                                number = input$cv,
+                                savePredictions = "all",
+                                returnResamp = "all"
+                                )
+      # model building
+      set.seed(42)
+      model <- train(x = x,
+                        y = y,
+                        method = 'glm',
+                        trControl = objContrl,
+                        family = 'binomial',
+                        )
+    }else if(input$model == 'Classification Tree' && input$fit == TRUE){
       model <- lm(high.Quality ~., data = trainDf)
-    }else if(input$model == 'Tree Based'){
-      
+    }else if(input$model == 'Random Forest' && input$fit == TRUE){
     }else {
       
     }
   })
   
+  # model Diagnostics
+  
+  diagnostic <- reactive({
+    
+    
+    
+  })
+  
   # to show in app the model summary
   output$summary <- renderPrint(
-    summary(model()),
-    width = getOption("width")  # need to see how to correct this
+    if (input$fit == TRUE){
+      print(summary(model())) 
+    },
+    width = 10000
   )
   
   # Model Prediction
