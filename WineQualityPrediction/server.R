@@ -10,6 +10,7 @@ library(viridis)
 library(PerformanceAnalytics)
 library(mathjaxr)
 library(caret)
+library('pscl')
 
 function(input, output, session) {
   
@@ -234,50 +235,83 @@ function(input, output, session) {
     cols <- c(input$variables)
     df <- df%>%select(all_of(cols))
     # get the train df
-    trainDf <- df[index,]
+    trainDf <- as.data.frame(df[index,])
     x <- trainDf %>% select(everything(), -high.Quality)
     y <- as.factor(trainDf$high.Quality)
-    # this will return a model, need to use renderPrint 
-    # to use this output
     if (input$model == 'Generalized Model' && input$fit == TRUE){
       # control parameter
-      objContrl <- trainControl(method = "cv",
+      trainControl <- trainControl(method = "cv",
                                 number = input$cv,
                                 savePredictions = "all",
-                                returnResamp = "all"
                                 )
       # model building
       set.seed(42)
-      model <- train(x = x,
-                        y = y,
+      model <- caret::train(high.Quality ~ ., data = trainDf,
                         method = 'glm',
-                        trControl = objContrl,
+                        trControl = trainControl,
                         family = 'binomial',
+                        preProcess = c("center", "scale")
                         )
     }else if(input$model == 'Classification Tree' && input$fit == TRUE){
-      model <- lm(high.Quality ~., data = trainDf)
+      trainControl <- trainControl(method = 'repeatedcv', 
+                                  number = input$cv,
+                                  repeats = 3)
+      if (input$tuneP == FALSE) {
+      model <- train(high.Quality ~ . , data = trainDf,
+                     method = 'rpart', 
+                     trControl = trainControl,
+                     preProcess = c('center', 'scale'))
+      }else if (input$tuneP){
+        model <- train(high.Quality ~ . , data = trainDf,
+                       method = 'rpart', 
+                       trControl = trainControl,
+                       preProcess = c('center', 'scale'),
+                       tuneGrid = data.frame(cp = seq(input$cp[1], input$cp[2], 0.001)))
+     }
     }else if(input$model == 'Random Forest' && input$fit == TRUE){
     }else {
       
     }
   })
   
-  # model Diagnostics
-  
-  diagnostic <- reactive({
-    
-    
-    
-  })
   
   # to show in app the model summary
   output$summary <- renderPrint(
-    if (input$fit == TRUE){
+    if (input$model == 'Generalized Model' && input$fit == TRUE){
       print(summary(model())) 
+    } else if (input$model == 'Classification Tree' && input$fit == TRUE){
+      print(model())
     },
     width = 10000
   )
   
+  # model Diagnostics
+  
+  diagnostic <- reactive({
+    if (input$model == 'Generalized Model' && input$fit == TRUE){
+      model <- model()
+      model$results[2:7]
+    }
+  })
+  
+
+  
+  #Diagnostic test
+  output$diagTest <- renderPrint(
+    if (input$model == 'Generalized Model' && input$diagnostic == TRUE){
+      print(diagnostic())
+    },
+    width = 10000
+  )
+
+  # output$varImp <- renderUI({
+  #   if (input$model == 'Generalized Model' && input$diagnostic == TRUE){
+  #     model <- model()
+  #     text <- paste0('gafga', varImp(model))
+  #     h4(text)
+  #   }
+  # 
+  # })
   # Model Prediction
 
   
