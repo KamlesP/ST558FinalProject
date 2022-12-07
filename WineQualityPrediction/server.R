@@ -221,7 +221,7 @@ function(input, output, session) {
     index <- sample(dim(df)[1], size = dim(df)[1]*input$splitratio, replace = FALSE)
   })
   
-  # main models
+  # MAIN MODEL ####################################################################
   model <- reactive({
     set.seed(42)
     # get the currect data frame
@@ -271,6 +271,15 @@ function(input, output, session) {
                        tuneGrid = data.frame(cp = seq(input$cp[1], input$cp[2], 0.001)))
      }
     }else if(input$model == 'Random Forest' && input$fit == TRUE){
+      trainControl <- trainControl(method = 'repeatedcv',
+                                   number = input$cv,
+                                   repeats = 3)
+      model <- train(high.Quality ~ ., data = trainDf,
+                     method = 'rf',
+                     trControl = trainControl,
+                     preProcess = c('center', 'scale'),
+                     tuneGrid = data.frame(mtry = 1:(dim(trainDf)[2]-1))
+                     )
     }else {
       
     }
@@ -282,12 +291,14 @@ function(input, output, session) {
       print(summary(model())) 
     } else if (input$model == 'Classification Tree' && input$fit == TRUE){
       print(model())
+    }else if(input$model == 'Random Forest' && input$fit == TRUE){
+      model <- model()
+      print(model)
     },
     width = 10000
   )
   
   # model Diagnostics
-  
   diagnostic <- reactive({
     if (input$model == 'Generalized Model' && input$fit == TRUE){
       model <- model()
@@ -295,17 +306,21 @@ function(input, output, session) {
     }else if (input$model == 'Classification Tree' && input$fit == TRUE){
       model <- model()
       min <- model$results[which.max(model$results[, "Accuracy"]), 'cp']
+    } else if(input$model == 'Random Forest' && input$fit == TRUE){
+      rfModel <- model()
+      varImp(rfModel)
     }
   })
   
 
   
-  #Diagnostic test
+  #Diagnostic 
   output$diagTest <- renderPrint(
     if (input$model == 'Generalized Model' && input$diagnostic == TRUE){
       print(diagnostic())
+    }else if(input$model == 'Random Forest' && input$diagnostic == TRUE){
+      print(diagnostic())
     },
-    # no if else case for classification tree, seprate created
     width = 10000
   )
   
@@ -314,17 +329,19 @@ function(input, output, session) {
     if (input$model == 'Classification Tree' && input$diagnostic == TRUE){
       t <- model()
       rattle::fancyRpartPlot(t$finalModel, caption = paste0('Wine Data: ', input$dfType2))
+    } else if (input$model == 'Random Forest' && input$diagnostic == TRUE){
+      plot(model())
     }
   })
+  
+  # short note for mtry
+  output$mtryParam <- renderText({
+    text <- p("[INFO!!!] Model is using 'mtry' as a tuneGrid parameter. 
+              The value will range from 1 to number of predictor variables
+              selected", style = 'color:blue')
+    paste0(text)
+  })
 
-  # output$varImp <- renderUI({
-  #   if (input$model == 'Generalized Model' && input$diagnostic == TRUE){
-  #     model <- model()
-  #     text <- paste0('gafga', varImp(model))
-  #     h4(text)
-  #   }
-  # 
-  # })
   # Model Prediction
 
   
