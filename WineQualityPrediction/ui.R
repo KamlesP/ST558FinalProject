@@ -205,7 +205,7 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
                                                   label = 'Generate Diagnostic Result', 
                                                   value = FALSE),
                                     verbatimTextOutput('diagTest'),
-                                    verbatimTextOutput('varImp'))
+                                    plotOutput('tree'))
                               )
                               ),
                      tabPanel(title  = 'Prediction')

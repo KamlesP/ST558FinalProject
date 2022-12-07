@@ -10,7 +10,8 @@ library(viridis)
 library(PerformanceAnalytics)
 library(mathjaxr)
 library(caret)
-library('pscl')
+library('rpart.plot')
+library(rattle)
 
 function(input, output, session) {
   
@@ -246,12 +247,13 @@ function(input, output, session) {
                                 )
       # model building
       set.seed(42)
-      model <- caret::train(high.Quality ~ ., data = trainDf,
+      model <- caret::train(high.Quality ~ . , data = trainDf,
                         method = 'glm',
                         trControl = trainControl,
                         family = 'binomial',
                         preProcess = c("center", "scale")
                         )
+      model
     }else if(input$model == 'Classification Tree' && input$fit == TRUE){
       trainControl <- trainControl(method = 'repeatedcv', 
                                   number = input$cv,
@@ -273,8 +275,7 @@ function(input, output, session) {
       
     }
   })
-  
-  
+
   # to show in app the model summary
   output$summary <- renderPrint(
     if (input$model == 'Generalized Model' && input$fit == TRUE){
@@ -290,7 +291,10 @@ function(input, output, session) {
   diagnostic <- reactive({
     if (input$model == 'Generalized Model' && input$fit == TRUE){
       model <- model()
-      model$results[2:7]
+      model$results[2:5]
+    }else if (input$model == 'Classification Tree' && input$fit == TRUE){
+      model <- model()
+      min <- model$results[which.max(model$results[, "Accuracy"]), 'cp']
     }
   })
   
@@ -301,8 +305,17 @@ function(input, output, session) {
     if (input$model == 'Generalized Model' && input$diagnostic == TRUE){
       print(diagnostic())
     },
+    # no if else case for classification tree, seprate created
     width = 10000
   )
+  
+  # for classification tree
+  output$tree <- renderPlot({
+    if (input$model == 'Classification Tree' && input$diagnostic == TRUE){
+      t <- model()
+      rattle::fancyRpartPlot(t$finalModel, caption = paste0('Wine Data: ', input$dfType2))
+    }
+  })
 
   # output$varImp <- renderUI({
   #   if (input$model == 'Generalized Model' && input$diagnostic == TRUE){
