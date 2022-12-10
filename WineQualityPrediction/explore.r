@@ -16,6 +16,4 @@ dfWhite$Type <- 'white'
 df <- rbind(dfRed, dfWhite)
 df$high.Quality <- ifelse(df$quality>5,1,0)
 
-# convert quality into a two-level factor
-df$high.Quality <- as.factor(df$high.Quality)
 
