@@ -13,6 +13,7 @@ library(caret)
 library('rpart.plot')
 library(rattle)
 library(pROC)
+library(dashboardthemes)
 
 function(input, output, session) {
   
@@ -223,12 +224,12 @@ function(input, output, session) {
     m2 <- withMathJax('$$\\mu = \\log(\\pi\frac{1-pi}$$')
     
     con4 <- p('Advantages of GLM over traditional OLS model: ', style = 'font-weight:bold')
-    con5 <- p("1. Firstly, no need to transform the response variable to have a normal distribution", 
+    con5 <- p("* Firstly, no need to transform the response variable to have a normal distribution", 
               br(),
               br(),
-              "2. It provides much flexibility by providing an option to select a logit fucntion", br(),br(),
-              "3. All interference tools i.e. Wald and Likelihood ratios are applicable in generalized linear models too.", br(),
-              "4. glm() from the base R package can be used to capture all GLM models")
+              "* It provides much flexibility by providing an option to select a logit fucntion", br(),br(),
+              "* All interference tools i.e. Wald and Likelihood ratios are applicable in generalized linear models too.", br(),br(),
+              "* glm() from the base R package can be used to capture all GLM models")
     h4(con, br(), br() ,con1, br(), br(), con2, m,  br(), con3, m2, con4,con5,  style = 'font-family: Times New Roman; text-align:justify' )
   })
   
@@ -257,11 +258,48 @@ function(input, output, session) {
   })
   
   output$rf <- renderUI({
-    con1 <- "Random forest are commonly used machine learning algorithm that combines the output of multiple
+    con1 <- p("Random forest are commonly used machine learning algorithm that combines the output of multiple
               decision trees to reach a single result. Random forest algorithm handels both regresssion and 
-              classification problem"
+              classification problem", 
+              br(), br(),
+              "Since Random forest is made up of several decision trees , it is imporatnt to describe
+              decision tree algorithm. Decision trees starts with a question and each question helps
+              an individuals to arrive at a final decision which will be denoted by the leaf node.",
+              br(),
+              "Decision trees seek to find the best split to the data via CART algorith and metrics 
+              such as Gini Impurity, information gain or MSE can be used to evaluate the quality 
+              of the split.", br(), br(),
+              " The random forest is the extension of bagging method as it utilizes both 
+              bagging and feature randomness to create an forest of decision tress.
+              The key differenc between a random forest and decision trees. While a decision tree cosniders 
+              all possible splits, random forests only selects a subset of those split"
+              )
+    con4 <- p("For a classification task, a majority vote i.e. the most frequent categorical
+              variable -  will yield the predicted class.", style = 'text-align:center; color: coral')
+    img = tags$img(src = 'rf.png', style =  'display: block;
+                                             margin-left: auto;
+                                             margin-right: auto;
+                                             width: 20%' )
+    con2 <- p("Advantages & Challenges of Random Forest", style = 'font-weight:bold;')
+    con3 <- p("* Reduces risk of Overfitting: Decision trees run the risk of overfitting as they tend to tightly fit all the 
+                samples within training data",
+              br(), br(),
+              "* Provide Flexibility: Since random forests can handle both regressiona and 
+              classsification problems with a very high accuracy, they are very popular among the 
+              data scienctist.", br(), br(),
+              "* Easy to determine feature Importance: Random Forest make it easy to
+              evaluate variable importance. Gini importance and mean decrease in impurity (MDI) are usually used to measure how much 
+              the model’s accuracy decreases when a given variable is excluded", br(), br(),
+              
+              "Key Challenges:", br(),
+              "* Time Consuming: As Random forest has to compute data for individual decision tree they are
+              expensive process in terms of the time and
+              computational power. ",
+              br(), br(),
+              "*More Complex: The prediction of a single decision tree is easier to interpret when compared to a forest of them."
+              )
     
-    
+    h4(con1, con4, img, con2, con3, style = 'font-family: Times New Roman;')
   })
   
   # Model Fit
@@ -451,29 +489,26 @@ function(input, output, session) {
   })
   
   
-  
-  
-  
-  
-  
   # Model Prediction
+  
   
   #get all selected input from fit model tab
   observe({
     #selected variables from fit 
     selectedVar <- input$variables
+    print(paste0("input var before update ", input$variables))
     updateRadioButtons(session,
                              inputId = 'predVar',
                              label = 'Selected Var',
                              choices = selectedVar,
                              selected = NULL
                              )
+    print(paste0("inside observe after update ",input$predVar))
   })
   
   # generate a df from the selected input
-  
   fixed.acidity <- renderUI({
-    val <- input$fa
+    #val <- input$fa
   })
 
   # userInput <- reactive({
@@ -509,7 +544,40 @@ function(input, output, session) {
   
   
   
+  # Data set Page
+  getRawData <- reactive({
+    # filter data based on wine radio button
+    if (input$wineType == 'Red'){
+      df <- df %>% dplyr::filter(Type == 'red')
+    } else if(input$wineType == 'White') {
+      df <- df %>% dplyr::filter(Type == 'white')
+    } else {
+      df <- df
+    }
+  })
   
+  output$WineData <- DT::renderDataTable({
+    df <- getRawData()
+    DT::datatable(df,
+    options = list(paging = T,
+                   pageLength = 15,
+                   scrollX = T,
+                   scrollY = T,
+                   autoWidth = T,
+                   dom = 'Bfrtip',
+                   style = 'bootstrap',
+                   buttons = c('csv', 'excel'),
+                   columnDefs = list(list(targets = '_all', className = 'dt-center'),
+                                     list(targets = c(0, 8, 9), visible = FALSE))
+                   
+                   ),
+    extensions = 'Buttons',
+    selection = 'single', ## enable selection of a single row
+    filter = 'top',              ## include column filters at the bottom
+    rownames = FALSE                ## don't show row numbers/names
+    
+    )
+  })
   
   
   

@@ -15,5 +15,3 @@ dfWhite$Type <- 'white'
 # final combined data frame
 df <- rbind(dfRed, dfWhite)
 df$high.Quality <- ifelse(df$quality>5,1,0)
-
-

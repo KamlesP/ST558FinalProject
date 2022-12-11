@@ -5,7 +5,8 @@ source('explore.r')
 library(dplyr)
 library(shinyalert)
 library(mathjaxr)
-
+library(shinythemes)
+library(dashboardthemes)
 
 dashboardPage(skin = 'yellow', title = 'R shiny Application',
   dashboardHeader(titleWidth = '100%', 
@@ -42,8 +43,15 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
                                   choices = c('Red', 'White','Combined'))),
     sidebarMenu(id = 'menu3',
       menuItem("Data", tabName = "data", icon = icon("book"))
-    )),
+    ), 
+    conditionalPanel(condition = "input.menu3 == 'data'",
+                     radioButtons(inputId = 'wineType', label = 'Select Wine Data', 
+                                  choices = c('Red', 'White','Combined')))
+    ),
   dashboardBody(
+    shinyDashboardThemes(
+      theme = "purple_gradient"
+    ),
   tags$style(type="text/css", "
 /*    Move everything below the header */
     .content-wrapper {
@@ -168,7 +176,7 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
                                     checkboxGroupInput(inputId = 'variables', inline = FALSE,
                                                        label = p("Select variable to include in the model", style = "color:black;font-family: Times New Roman;font-weight:bold; text-align:justify "),
                                                        choices = colnames(df[, c(1:11,14)]),
-                                                       selected = "high.Quality"),
+                                                       selected = list("high.Quality")),
                                     conditionalPanel(condition = "input.model == 'Classification Tree'",
                                                      checkboxInput(inputId = 'tuneP', 
                                                      label = p('Add cp for Tuning Parametr', style = "color:black;font-family: Times New Roman;font-weight:bold ")),
@@ -219,57 +227,64 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
                                       radioButtons(inputId = 'predVar',
                                                     label = 'Pred Var',
                                                     choices = colnames(df[, c(1:11,13)]),
-                                                    selected = NULL
-                                                    )
-                                     ),
+                                                    selected = "high.Quality"
+                                                    )),
                                   # for fixed acidity
                                   box( title = "User Input", width =2,
-                                  conditionalPanel(condition = 'input.predVar == "fixed.acidity" ',
-                                                       textInput(inputId = 'fa', 
-                                                                    label = 'Fixed Acidity',
-                                                                    value = 0)),
-                                  #for volatile acidity
-                                  conditionalPanel(condition = 'input.predVar == "volatile.acidity"',
-                                                        textInput(inputId = 'va', 
-                                                                     label = 'Volatile Acidity',
-                                                                     value = 0)),
-                                  conditionalPanel(condition = 'input.predVar == "citric.acid"',
-                                                   textInput(inputId = 'ca', 
-                                                                label = 'Citric Acid',
-                                                                value = 0)),
-                                  conditionalPanel(condition = 'input.predVar == "residual.sugar"',
-                                                   numericInput(inputId = 'rs', 
-                                                                label = 'Residual Sugar',
-                                                                value = 0)),
-                                  conditionalPanel(condition = 'input.predVar == "chlorides"',
-                                                   numericInput(inputId = 'ch', 
-                                                                label = 'Chloride',
-                                                                value = 0)),
-                                  conditionalPanel(condition = 'input.predVar == "free.sulfur.dioxide"',
-                                                   numericInput(inputId = 'so2', 
-                                                                label = 'Sulfur Di-Oxide',
-                                                                value = 0)),
-                                  conditionalPanel(condition = 'input.predVar == "total.sulfur.dioxide"',
-                                                   numericInput(inputId = 'tso2', 
-                                                                label = 'Total Sulfur Di-Oxide',
-                                                                value = 0)),
-                                  conditionalPanel(condition = 'input.predVar == "density"',
-                                                   numericInput(inputId = 'rho', 
-                                                                label = 'Density',
-                                                                value = 0)),
-                                  conditionalPanel(condition = 'input.predVar == "pH"',
-                                                   numericInput(inputId = 'pH', 
-                                                                label = 'pH',
-                                                                value = 0)),
-                                  conditionalPanel(condition = 'input.predVar == "sulphates"',
-                                                   numericInput(inputId = 'sulphate', 
-                                                                label = 'Sulphate',
-                                                                value = 0)),
-                                  conditionalPanel(condition = 'input.predVar == "alcohol"',
-                                                   numericInput(inputId = 'alcohol', 
-                                                                label = 'Alcohol',
-                                                                value = 0)),
-                                  
+                                       conditionalPanel(condition = "input.predVar =='density'",
+                                                        print("KP")),
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+                                  # conditionalPanel(condition = 'input.predVar == "ab"',
+                                  #                      textInput(inputId = 'fa', 
+                                  #                                   label = 'Fixed Acidity',
+                                  #                                   value = 0)),
+                                  # #for volatile acidity
+                                  # conditionalPanel(condition = 'input.predVar',
+                                  #                       textInput(inputId = 'va', 
+                                  #                                    label = 'Volatile Acidity',
+                                  #                                    value = 0)),
+                                  # conditionalPanel(condition = 'input.predVar == "citric.acid"',
+                                  #                  textInput(inputId = 'ca', 
+                                  #                               label = 'Citric Acid',
+                                  #                               value = 0)),
+                                  # conditionalPanel(condition = 'input.predVar == "residual.sugar"',
+                                  #                  numericInput(inputId = 'rs', 
+                                  #                               label = 'Residual Sugar',
+                                  #                               value = 0)),
+                                  # conditionalPanel(condition = 'input.predVar == "chlorides"',
+                                  #                  numericInput(inputId = 'ch', 
+                                  #                               label = 'Chloride',
+                                  #                               value = 0)),
+                                  # conditionalPanel(condition = 'input.predVar == "free.sulfur.dioxide"',
+                                  #                  numericInput(inputId = 'so2', 
+                                  #                               label = 'Sulfur Di-Oxide',
+                                  #                               value = 0)),
+                                  # conditionalPanel(condition = 'input.predVar == "total.sulfur.dioxide"',
+                                  #                  numericInput(inputId = 'tso2', 
+                                  #                               label = 'Total Sulfur Di-Oxide',
+                                  #                               value = 0)),
+                                  # conditionalPanel(condition = 'input.predVar == "density"',
+                                  #                  numericInput(inputId = 'rho', 
+                                  #                               label = 'Density',
+                                  #                               value = 0)),
+                                  # conditionalPanel(condition = 'input.predVar == "pH"',
+                                  #                  numericInput(inputId = 'pH', 
+                                  #                               label = 'pH',
+                                  #                               value = 0)),
+                                  # conditionalPanel(condition = 'input.predVar == "sulphates"',
+                                  #                  numericInput(inputId = 'sulphate', 
+                                  #                               label = 'Sulphate',
+                                  #                               value = 0)),
+                                  # conditionalPanel(condition = 'input.predVar == "alcohol"',
+                                  #                  numericInput(inputId = 'alcohol', 
+                                  #                               label = 'Alcohol',
+                                  #                               value = 0)),
+                                  # 
                                   actionButton("submit", "Submit")
                                   ),
                                   box(title = 'User Input Value', width = 8, uiOutput("fixed.acidity")
@@ -283,8 +298,14 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
       ),
       
       # fourth tab content
-      tabItem(tabName = 'data',
-              h2('data set')
+      tabItem(tabName = 'data', 
+              h4('Dataset', icon("database",lib = "font-awesome"),style="font-family:Times New Roman;color:black;text-align:center; font-size:1.5vw",
+                 fluidRow(
+                          column(DT::dataTableOutput("WineData"),
+                                 width = 12)),
+                 hr(),
+                 p(em("Made by"),br("KayP"),br("ST558 Project"),style="text-align:center; font-family: times")
+                 )
       )
     )
   )
