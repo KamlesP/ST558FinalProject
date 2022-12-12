@@ -491,25 +491,52 @@ function(input, output, session) {
   
   # Model Prediction
   
+  predVariable <- reactive(
+    vars <- input$variables
+  )
+  
+  output$note <- renderUI({
+    text <- "Model is developed based on the following predictor variables in 'Fit Model'
+              page. You will have to select same predictor variables to give a value"
+  })
+  output$selectedvar <- renderPrint({
+    vars <- predVariable()
+    print(vars)
+  })
   
   #get all selected input from fit model tab
-  observe({
-    #selected variables from fit 
-    selectedVar <- input$variables
-    print(paste0("input var before update ", input$variables))
-    updateRadioButtons(session,
-                             inputId = 'predVar',
-                             label = 'Selected Var',
-                             choices = selectedVar,
-                             selected = NULL
-                             )
-    print(paste0("inside observe after update ",input$predVar))
-  })
+  # observe({
+  #   #selected variables from fit
+  #   selectedVar <- input$variables
+  #   updatePickerInput(session,
+  #                            inputId = 'predVar',
+  #                            label = 'Selected Var',
+  #                            choices = selectedVar,
+  #                            selected = 'high.Qulaity'
+  #                            )
+  #   aa <- input$predVar
+  #   if('fixed.acidity' %in% aa){
+  #     updateNumericInput(session,
+  #                        inputId = 'predVar',
+  #                        label = "Fixed Acidity",
+  #                        value = 0)
+  #   } else if('volatile.acidity' %in% aa){
+  #     updateNumericInput(session, 
+  #                        label = "Volatile Acidity",
+  #                        inputId = 'predVar',
+  #                        value = 0)
+  #     
+  #   }
+  #   
+  #   
+  # 
+  # 
+  # })
   
-  # generate a df from the selected input
-  fixed.acidity <- renderUI({
-    #val <- input$fa
-  })
+  # # generate a df from the selected input
+  # fixed.acidity <- renderUI({
+  #   #val <- input$fa
+  # })
 
   # userInput <- reactive({
   #   cols <- c(input$variables)
@@ -575,39 +602,53 @@ function(input, output, session) {
     selection = 'single', ## enable selection of a single row
     filter = 'top',              ## include column filters at the bottom
     rownames = FALSE                ## don't show row numbers/names
-    
     )
   })
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
   # About Page
-  output$about <- renderText({
-    Intro <- HTML('Vinho Verede refers to Portuguese wine that originated
+  output$about <- renderUI({
+    Intro <- p('Vinho Verede refers to Portuguese wine that originated
                in the historic Minho province. The wine names means
                "green wine " but translates as a "young wine" as 
                they are released after three to six months grapes
                harvested. Majority of wines classified as Vinho
                Verde are white , but the region is also popular for 
-               producing red and rose wine')
-    main <- HTML("In this project I am trying to build a predictive model to
+               producing red and rose wine', br())
+    title <- p('Vinho Verde Location, Portugal', style = 'text-align:center; color:coral')
+    img = tags$img(src = 'location.png', style =  'display: block;
+                                             margin-left: auto;
+                                             margin-right: auto;
+                                             width: 20%' )
+    main <- p("In this project I am trying to build a predictive model to
               estimate the quality of the wine. The estimated quality 
               will have a score either '0' or '1'. The predicted quality
               1 will have the quality index greater than 5 and 0 will have less 
-              than 5.")
+              than 5", br())
+    head1 <-  p("Data Exploration ", style = 'font-weight:bold; color:black; text-align:center')
+    explore <- ("In Data exploration panel you can find all related visualization i.e box plot, histogram and 
+                density plot. Along with the plot we can also estimate for a significance level of 0.05
+                whetehr the predictor variable is significant or not. All options can be explored using a 
+                side panel which will be visible once you click the 'Data Exploration' tab.")
+    head2 <-  p("Data Modeling ", style = 'font-weight:bold; color:black; text-align:center')
+    data <- p("Data Modeling tab is broadly divided into three tab panel, the modeling info, model fit and
+              prediction tab. The modeling info tab describes some basic concepts regrarding difernt models
+              that I have used to built this shiny application, i.e. classification tree, generalized linear model, and
+              random forest.", br(),br(), 
+              "Model fit is brain of the application. First it has flexibility to choose the desired 
+              model a user want to run. It also has an option to select the desired test-train split ratio
+              for training and testing of the model.", br(),
+              "Based on the selected model, the application will generate option to tune the parameters. User can 
+              also add or remove any predictor parameter from the model and the model will update automatically. 
+              Ther user can also check how model performing in the training dataset based on the diagnostic generated in model fit tab", br(), br(),
+              "Once you are satidfied with the model performance you can also check model's performance on the test data. 
+              You can also generate a confusion matric and AUC curve based on the test diagnostics."
+              )
+    head3 <-  p("Model Prediction ", style = 'font-weight:bold; color:black; text-align:center')
+    prediction <- p("In model predition tab user has option to select the predictor variables used for model building and simultaneiuly user
+                    can insert numerical values to predict.")
     
-    paste0(Intro,main)
-    #paste0(Intro, main, style = 'color : coral')
-    
+    head4 <-  p("Data ", style = 'font-weight:bold; color:black; text-align:center')
+    df <- p("In data table we can see dataframe, filter rows and can download it too.")
+    h4(Intro, title,  img,  br(), br(), main, head1, explore, br(), br(), head2, data, head3, prediction, head4, df,   style = 'font-family:Times New Roman; text-align:justify')
   })
-  
 }

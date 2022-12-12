@@ -7,6 +7,7 @@ library(shinyalert)
 library(mathjaxr)
 library(shinythemes)
 library(dashboardthemes)
+library(shinyWidgets)
 
 dashboardPage(skin = 'yellow', title = 'R shiny Application',
   dashboardHeader(titleWidth = '100%', 
@@ -50,7 +51,7 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
     ),
   dashboardBody(
     shinyDashboardThemes(
-      theme = "purple_gradient"
+      theme = "flat_red"
     ),
   tags$style(type="text/css", "
 /*    Move everything below the header */
@@ -121,7 +122,7 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
       tabItem(tabName = "about",
               fluidRow(
                 box(status = 'success', width = 12, solidHeader = T,
-                    textOutput('about')),
+                    uiOutput('about')),
       )
       ),
       
@@ -176,7 +177,7 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
                                     checkboxGroupInput(inputId = 'variables', inline = FALSE,
                                                        label = p("Select variable to include in the model", style = "color:black;font-family: Times New Roman;font-weight:bold; text-align:justify "),
                                                        choices = colnames(df[, c(1:11,14)]),
-                                                       selected = list("high.Quality")),
+                                                       selected = "high.Quality"),
                                     conditionalPanel(condition = "input.model == 'Classification Tree'",
                                                      checkboxInput(inputId = 'tuneP', 
                                                      label = p('Add cp for Tuning Parametr', style = "color:black;font-family: Times New Roman;font-weight:bold ")),
@@ -222,77 +223,31 @@ dashboardPage(skin = 'yellow', title = 'R shiny Application',
                               ),
                               ),
                      tabPanel(title  = h4('Prediction', style = 'font-family: Times New Roman; background-color:lighblue; font-weight: bold; font-size:3vw'),
-                              fluidRow(id = 'predict',
-                                  box(title = 'Pred Vaiables from Fit', width = 2,
-                                      radioButtons(inputId = 'predVar',
-                                                    label = 'Pred Var',
-                                                    choices = colnames(df[, c(1:11,13)]),
-                                                    selected = "high.Quality"
-                                                    )),
-                                  # for fixed acidity
-                                  box( title = "User Input", width =2,
-                                       conditionalPanel(condition = "input.predVar =='density'",
-                                                        print("KP")),
-                                       
-                                       
-                                       
-                                       
-                                       
-                                       
-                                  # conditionalPanel(condition = 'input.predVar == "ab"',
-                                  #                      textInput(inputId = 'fa', 
-                                  #                                   label = 'Fixed Acidity',
-                                  #                                   value = 0)),
-                                  # #for volatile acidity
-                                  # conditionalPanel(condition = 'input.predVar',
-                                  #                       textInput(inputId = 'va', 
-                                  #                                    label = 'Volatile Acidity',
-                                  #                                    value = 0)),
-                                  # conditionalPanel(condition = 'input.predVar == "citric.acid"',
-                                  #                  textInput(inputId = 'ca', 
-                                  #                               label = 'Citric Acid',
-                                  #                               value = 0)),
-                                  # conditionalPanel(condition = 'input.predVar == "residual.sugar"',
-                                  #                  numericInput(inputId = 'rs', 
-                                  #                               label = 'Residual Sugar',
-                                  #                               value = 0)),
-                                  # conditionalPanel(condition = 'input.predVar == "chlorides"',
-                                  #                  numericInput(inputId = 'ch', 
-                                  #                               label = 'Chloride',
-                                  #                               value = 0)),
-                                  # conditionalPanel(condition = 'input.predVar == "free.sulfur.dioxide"',
-                                  #                  numericInput(inputId = 'so2', 
-                                  #                               label = 'Sulfur Di-Oxide',
-                                  #                               value = 0)),
-                                  # conditionalPanel(condition = 'input.predVar == "total.sulfur.dioxide"',
-                                  #                  numericInput(inputId = 'tso2', 
-                                  #                               label = 'Total Sulfur Di-Oxide',
-                                  #                               value = 0)),
-                                  # conditionalPanel(condition = 'input.predVar == "density"',
-                                  #                  numericInput(inputId = 'rho', 
-                                  #                               label = 'Density',
-                                  #                               value = 0)),
-                                  # conditionalPanel(condition = 'input.predVar == "pH"',
-                                  #                  numericInput(inputId = 'pH', 
-                                  #                               label = 'pH',
-                                  #                               value = 0)),
-                                  # conditionalPanel(condition = 'input.predVar == "sulphates"',
-                                  #                  numericInput(inputId = 'sulphate', 
-                                  #                               label = 'Sulphate',
-                                  #                               value = 0)),
-                                  # conditionalPanel(condition = 'input.predVar == "alcohol"',
-                                  #                  numericInput(inputId = 'alcohol', 
-                                  #                               label = 'Alcohol',
-                                  #                               value = 0)),
-                                  # 
-                                  actionButton("submit", "Submit")
-                                  ),
-                                  box(title = 'User Input Value', width = 8, uiOutput("fixed.acidity")
-                                      )
-
-                                  
+                              fluidRow(
+                                box(width = 4,title = p('Variables for Prediction', style = 'font-family:Times New Roman; text-align:center'),
+                                    uiOutput('note'),
+                                    verbatimTextOutput('selectedvar')), 
+                                box(solidHeader = T, collapsible = T, background = 'orange', width = 4, 
+                                    selectInput(inputId = 'predVars', label = h5("Select Variables to Insert value", style = "color:black;font-family: Times New Roman;font-weight:bold; text-align:justify "),
+                                                    choices = c('Fixed Acidity', "Volatile Acidity", 
+                                                                "Citric Acid", "Residual Sugar",
+                                                                "Chlorides", "Free Sulphur Dioxide",
+                                                                "Total Sulphur Di-Oxide",
+                                                                "Desnity", "pH", "Sulphate", "Alcohol"),
+                                                selectize = F,
+                                                selected = 'Fixed Acidity')),
+                                box(width = 4, title = 'user Input',
+                                    conditionalPanel("input.predVars =='Fixed Acidity'",
+                                                     numericInput(inputId = 'num',
+                                                                  label = 'Insert value',
+                                                                  value = 0)),
+                                    conditionalPanel("input.predVars =='Fixed Acidity'",
+                                                     numericInput(inputId = 'num2',
+                                                                  label = 'Calssification Tree',
+                                                                  value = 0)),
+                                    ),
                               )
-                      )
+                      ),
                    )
                  )
       ),
