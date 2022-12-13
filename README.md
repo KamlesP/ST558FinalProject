@@ -1,14 +1,14 @@
 # R-Shiny App: Wine Quality Prediction  
 
 ## Introduction  
-This R based shiny application is submitted as part of my final project course submission for ST558 coursework in Fall 2022 at NC State University. In this Shiny application, I used free available dataset from [UCI](www.google.com) repository and built a interactive predictive model. This Shiny application has multiple tabs:
-1. About -  Explain about the dataset
+This R based shiny application is submitted as part of my final project course submission for ST558 coursework in Fall 2022 at NC State University. In this Shiny application, I used free available dataset from UCI repository and built an interactive predictive model that can predict the quality of wine. This Shiny application has multiple tabs:
+1. About -  Explain about the Wine and overall structure of the application
 2. Data Explore - Visualization from the dataset
 3. Model - It has three tab one describe about the different models used for the application, other explain about the model fit and the last one give user flexibility to select predictor variables to estimate quality of the wine.
 4. Data - In this tab we can check the dataset and can filter as well as download.  
 
 ## Packages Required  
-Following packages are used for the R shiny web application, to download required libraries pleas use following R code.  
+Following packages are used for the R shiny application, to download required libraries pleas use following R code.  
  
 ```{r}
 packages <- c("shiny", 

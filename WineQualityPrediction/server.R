@@ -4,7 +4,6 @@ library(shinydashboard)
 library(ggplot2)
 library(DataExplorer)
 source('explore.r')
-library(plotly)
 library(dplyr)
 library(viridis)
 library(PerformanceAnalytics)
@@ -16,8 +15,6 @@ library(pROC)
 library(dashboardthemes)
 
 function(input, output, session) {
-  
-  
   # Data Exploration 
   output$dataExplore <- renderUI({
     text1 <- "The primary objective of Null Hypothesis testing is to estimate p-value, 
@@ -209,7 +206,7 @@ function(input, output, session) {
   
   # Modeling Info###########################################################################
   output$glm <- renderUI({
-    con <- "The term 'gernarlized' linear model refers to a large class of models populaized by
+    con <- "The term 'gernarlized' linear model refers to a large class of models, populaized by
                 McCullagh and Nelder. In these models, the  response variable assumed to follow a exponential 
                 family distribution. There are three main component in any GLM model:" 
     
@@ -221,16 +218,16 @@ function(input, output, session) {
     m <- withMathJax('$$\\beta0 + \\beta1*x1 + \\beta2*x2....$$')
     con3 <- "Link Function: It specifies a link between the random and systematic components. It expalins how
               the expected value of response is related to the linear combination of predictor variables"
-    m2 <- withMathJax('$$\\mu = \\log(\\pi\frac{1-pi}$$')
+#    m2 <- withMathJax('$$\\mu = \\log(\\pi\frac{1-pi}$$')
     
-    con4 <- p('Advantages of GLM over traditional OLS model: ', style = 'font-weight:bold')
+    con4 <- p('Advantages of GLM over traditional OLS model: ', style = 'font-weight:bold; color:black')
     con5 <- p("* Firstly, no need to transform the response variable to have a normal distribution", 
               br(),
               br(),
               "* It provides much flexibility by providing an option to select a logit fucntion", br(),br(),
               "* All interference tools i.e. Wald and Likelihood ratios are applicable in generalized linear models too.", br(),br(),
               "* glm() from the base R package can be used to capture all GLM models")
-    h4(con, br(), br() ,con1, br(), br(), con2, m,  br(), con3, m2, con4,con5,  style = 'font-family: Times New Roman; text-align:justify' )
+    h4(con, br(), br() ,con1, br(), br(), con2, m,  br(), con3, br(),br(), con4,con5,  style = 'font-family: Times New Roman; text-align:justify' )
   })
   
   output$cart <- renderUI({
@@ -280,7 +277,7 @@ function(input, output, session) {
                                              margin-left: auto;
                                              margin-right: auto;
                                              width: 20%' )
-    con2 <- p("Advantages & Challenges of Random Forest", style = 'font-weight:bold;')
+    con2 <- p("Advantages & Challenges of Random Forest", style = 'font-weight:bold;color:black')
     con3 <- p("* Reduces risk of Overfitting: Decision trees run the risk of overfitting as they tend to tightly fit all the 
                 samples within training data",
               br(), br(),
@@ -478,7 +475,7 @@ function(input, output, session) {
     prediction <- stats::predict(model, newdata = testDf)
     prediction <- ifelse(prediction>0.5,1,0)
     # plot for GLM
-    if(input$model %in% c('Generalized Model', 'Classification Tree', 'Random Forest') && input$roc){
+    if(input$model %in% c('Generalized Model', 'Classification Tree', 'Random Forest') && input$roc && input$fit){
       #plotROC::plot_interactive_roc(testDf$high.Quality, prediction)
       rocObj <- pROC::roc(testDf$high.Quality, prediction)
       auc <- round(auc(testDf$high.Quality, prediction),4)
@@ -496,78 +493,75 @@ function(input, output, session) {
   )
   
   output$note <- renderUI({
-    text <- "Model is developed based on the following predictor variables in 'Fit Model'
-              page. You will have to select same predictor variables to give a value"
+    text <- "Model is trained based on the following predictor variables. 
+              You will have to select same predictor variables for prediction. The response variable will appear as
+              it is default variable in fit "
   })
   output$selectedvar <- renderPrint({
     vars <- predVariable()
     print(vars)
   })
   
-  #get all selected input from fit model tab
-  # observe({
-  #   #selected variables from fit
-  #   selectedVar <- input$variables
-  #   updatePickerInput(session,
-  #                            inputId = 'predVar',
-  #                            label = 'Selected Var',
-  #                            choices = selectedVar,
-  #                            selected = 'high.Qulaity'
-  #                            )
-  #   aa <- input$predVar
-  #   if('fixed.acidity' %in% aa){
-  #     updateNumericInput(session,
-  #                        inputId = 'predVar',
-  #                        label = "Fixed Acidity",
-  #                        value = 0)
-  #   } else if('volatile.acidity' %in% aa){
-  #     updateNumericInput(session, 
-  #                        label = "Volatile Acidity",
-  #                        inputId = 'predVar',
-  #                        value = 0)
-  #     
-  #   }
-  #   
-  #   
-  # 
-  # 
-  # })
+  dataInput <- reactive({
+    #userVar <- length(input$variables)
+    dfUser <- data.frame(matrix(ncol = 0, nrow = 1))
+    if (input$s_afa== TRUE){
+      dfUser$fixed.acidity <- input$fa
+    }
+    if (input$s_va == TRUE){
+      dfUser$volatile.acidity <- input$va
+    }
+    if (input$s_ca){
+      dfUser$citric.acid <- input$ca
+    }
+    if (input$s_rs){
+      dfUser$residual.sugar <- input$rs
+    }
+    if (input$s_ch){
+      dfUser$chlorides <- input$ch
+    }
+    if (input$s_so2){
+      dfUser$free.sulfur.dioxide <- input$so2
+    }
+    if (input$s_tso2){
+      dfUser$total.sulfur.dioxide <- input$tso2
+    }
+    if (input$s_rho){
+      dfUser$density <- input$rho
+    }
+    if (input$s_pH){
+      dfUser$pH <- input$pH
+    }
+    if (input$s_alcohol){
+      dfUser$alcohol <- input$alcohol
+    }
+    finalDf <- as.data.frame(dfUser)
+  })
   
-  # # generate a df from the selected input
-  # fixed.acidity <- renderUI({
-  #   #val <- input$fa
-  # })
-
-  # userInput <- reactive({
-  #   cols <- c(input$variables)
-  #   cols <- cols[-length(cols)]
-  #   val <- c()
-  #   # m <- matrix(data = 0, nrow = 1,  ncol = length(cols))
-  #   # colnames(m) <- cols
-  #   # df <- as.data.frame(m)
-  #   if(input$varPred == ('fixed.acidity')){
-  #     fixed.acidity = input$fa
-  #     append(val, fixed.acidity)
-  #   } 
-  #   if(input$varPred == 'voaltile.acidity'){
-  #     volatile.acidity = input$va
-  #     append(val, volatile.acidity)
-  #   }
-  #     val
-  # 
-  # })
-  # 
-  # output$text33 <- renderPrint(
-  #   print(userInput()),
-  #   width = 10000
-  # )
-  
-  
+  output$userTable <- renderTable({
+    if (input$show){
+    dfPred <- dataInput()
+    }else{
+      print("Waiting for User to print table")
+    }
+  })
   
 
-  
-  
-  
+  output$finalPrediction <- renderPrint({
+    model <- model()
+    newVal <- dataInput()
+    if (input$predict){
+      pred <- stats::predict(model, newdata = newVal)
+      prediction <- ifelse(pred>0.5,1,0)
+      if (pred < 5.00 ){
+        print(paste0("Based on the User Input, the wine will be categorised as ", prediction , " i.e quality less than 5 " ) )
+      }else {
+        print(paste0("Based on the User Input, the wine will be categorised as ", prediction , " i.e. quality geater than 5 " ) )
+      }
+    }else{
+      print("Waiting for the model to predict")
+    }
+  })
   
   
   
@@ -610,7 +604,7 @@ function(input, output, session) {
     Intro <- p('Vinho Verede refers to Portuguese wine that originated
                in the historic Minho province. The wine names means
                "green wine " but translates as a "young wine" as 
-               they are released after three to six months grapes
+               they are released after three to six months of grapes
                harvested. Majority of wines classified as Vinho
                Verde are white , but the region is also popular for 
                producing red and rose wine', br())
@@ -623,32 +617,32 @@ function(input, output, session) {
               estimate the quality of the wine. The estimated quality 
               will have a score either '0' or '1'. The predicted quality
               1 will have the quality index greater than 5 and 0 will have less 
-              than 5", br())
+              than 5.
+              This shiny web based application has multiple tab panels that are described below: ")
     head1 <-  p("Data Exploration ", style = 'font-weight:bold; color:black; text-align:center')
-    explore <- ("In Data exploration panel you can find all related visualization i.e box plot, histogram and 
-                density plot. Along with the plot we can also estimate for a significance level of 0.05
-                whetehr the predictor variable is significant or not. All options can be explored using a 
-                side panel which will be visible once you click the 'Data Exploration' tab.")
+    explore <- ("In Data exploration panel you can find all related visualization i.e box plot, histogram, count and 
+                density plot. Along with the plot you can also estimate for a significance level of apredictor
+                 variable . All options can be explored using a side panel which will be visible once you click the 'Data Exploration' tab.")
     head2 <-  p("Data Modeling ", style = 'font-weight:bold; color:black; text-align:center')
-    data <- p("Data Modeling tab is broadly divided into three tab panel, the modeling info, model fit and
-              prediction tab. The modeling info tab describes some basic concepts regrarding difernt models
-              that I have used to built this shiny application, i.e. classification tree, generalized linear model, and
-              random forest.", br(),br(), 
-              "Model fit is brain of the application. First it has flexibility to choose the desired 
-              model a user want to run. It also has an option to select the desired test-train split ratio
-              for training and testing of the model.", br(),
-              "Based on the selected model, the application will generate option to tune the parameters. User can 
-              also add or remove any predictor parameter from the model and the model will update automatically. 
-              Ther user can also check how model performing in the training dataset based on the diagnostic generated in model fit tab", br(), br(),
-              "Once you are satidfied with the model performance you can also check model's performance on the test data. 
-              You can also generate a confusion matric and AUC curve based on the test diagnostics."
-              )
+    data <- p("Data Modeling tab is broadly divided into three-tab panel, the modeling info, model fit and
+                prediction tab. The modeling info tab describes some basic concepts regarding different models
+                that I have used to build this shiny application, i.e., classification tree, generalized linear model, and
+                random forest.", br(),br(), 
+                              "Model fit is brain of the application. First it has flexibility to choose the desired
+                model a user want to run. It also has an option to select the desired test-train split ratio
+                for training and testing of the model.", br(),
+                              "Based on the selected model, the application will generate option to tune the parameters. User can
+                also add or remove any predictor parameter from the model and the model will update automatically.
+                The user can also check how model performing in the training dataset based on the diagnostic generated in model fit tab", br(), br(),
+                              "Once you are satisfied with the model performance you can also check model's performance on the test data.
+                You can also generate a confusion matric and AUC curve based on the test diagnostics."
+    )
     head3 <-  p("Model Prediction ", style = 'font-weight:bold; color:black; text-align:center')
     prediction <- p("In model predition tab user has option to select the predictor variables used for model building and simultaneiuly user
                     can insert numerical values to predict.")
     
     head4 <-  p("Data ", style = 'font-weight:bold; color:black; text-align:center')
-    df <- p("In data table we can see dataframe, filter rows and can download it too.")
+    df <- p("In data table user can see dataframe, filter rows and can download it too.")
     h4(Intro, title,  img,  br(), br(), main, head1, explore, br(), br(), head2, data, head3, prediction, head4, df,   style = 'font-family:Times New Roman; text-align:justify')
   })
 }
